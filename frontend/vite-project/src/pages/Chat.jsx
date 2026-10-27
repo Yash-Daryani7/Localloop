@@ -6,6 +6,7 @@ import Sidebar from '../components/Sidebar'
 import Navbar from '../components/Navbar'
 import ChatWindow from '../components/ChatWindow'
 import GroupChatWindow from '../components/GroupChatWindow'
+import Avatar from '../components/Avatar'
 import axiosInstance from '../api/axios'
 
 function Chat() {
@@ -121,9 +122,7 @@ function Chat() {
                       className={`conversation-item ${activeConversation === conv.conversationId ? 'active' : ''}`}
                       onClick={() => handleSelectConversation(conv)}
                     >
-                      <div className="avatar avatar-placeholder" style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0 }}>
-                        {conv.otherUser?.name?.charAt(0) || 'U'}
-                      </div>
+                      <Avatar name={conv.otherUser?.name || 'Neighbor'} src={conv.otherUser?.avatar} style={{ width: 40, height: 40, flexShrink: 0 }} />
                       <div className="conversation-info">
                         <div className="conversation-name">{conv.otherUser?.name || 'Neighbor'}</div>
                         <div className="conversation-last-msg">{conv.lastMessage?.content || 'No messages yet'}</div>

@@ -8,6 +8,7 @@ import {
   deleteEvent,
   updateEvent
 } from '../store/slices/eventSlice'
+import Avatar from '../components/Avatar'
 
 const EventDetail = () => {
   const { id } = useParams()
@@ -323,13 +324,7 @@ const EventDetail = () => {
         <div className="card">
           <h3 style={{ fontSize: '1.1rem', marginBottom: '14px' }}>Organizer</h3>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div className="avatar avatar-lg">
-              {event.creator?.avatar ? (
-                <img src={event.creator.avatar} alt="Organizer" />
-              ) : (
-                <span>{(event.creator?.name || 'O').charAt(0).toUpperCase()}</span>
-              )}
-            </div>
+            <Avatar name={event.creator?.name || 'Organizer'} src={event.creator?.avatar} size="lg" />
             <div>
               <div style={{ fontWeight: '700', fontSize: '1.05rem' }}>{event.creator?.name || 'Neighbor'}</div>
               <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
@@ -369,13 +364,7 @@ const EventDetail = () => {
                       border: '1px solid var(--border)'
                     }}
                   >
-                    <div className="avatar avatar-sm">
-                      {att.avatar ? (
-                        <img src={att.avatar} alt={name} />
-                      ) : (
-                        <span>{name.charAt(0).toUpperCase()}</span>
-                      )}
-                    </div>
+                    <Avatar name={name} src={att.avatar} size="sm" />
                     <span style={{ fontSize: '0.82rem', fontWeight: '500' }}>{name}</span>
                   </div>
                 )

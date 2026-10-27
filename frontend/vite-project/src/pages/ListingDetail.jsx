@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { fetchListingById, markAsSold, deleteListing, expressInterest } from '../store/slices/listingSlice'
 import Sidebar from '../components/Sidebar'
 import Navbar from '../components/Navbar'
+import Avatar from '../components/Avatar'
 
 function ListingDetail() {
   const { id } = useParams()
@@ -82,7 +83,7 @@ function ListingDetail() {
                 <div style={{ padding: '14px', background: 'var(--bg-input)', borderRadius: 'var(--radius-md)', marginBottom: 20 }}>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 6 }}>SELLER</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div className="avatar avatar-placeholder" style={{ width: 36, height: 36, borderRadius: '50%', fontSize: '0.85rem' }}>{listing.seller?.name?.charAt(0) || 'U'}</div>
+                    <Avatar name={listing.seller?.name || 'Neighbor'} src={listing.seller?.avatar} style={{ width: 36, height: 36, fontSize: '0.85rem' }} />
                     <div>
                       <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{listing.seller?.name || 'Neighbor'}</div>
                       <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>📍 {listing.neighborhood}</div>

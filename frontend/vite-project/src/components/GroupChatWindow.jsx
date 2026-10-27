@@ -7,6 +7,7 @@ import {
   fetchOnlineMembers
 } from '../store/slices/groupChatSlice'
 import socket from '../socket'
+import Avatar from './Avatar'
 
 function GroupChatWindow() {
   const navigate = useNavigate()
@@ -186,21 +187,7 @@ function GroupChatWindow() {
               title={member.name}
             >
               <div className="online-member-avatar">
-                {member.avatar ? (
-                  <img
-                    src={member.avatar}
-                    alt={member.name}
-                    className="avatar"
-                    style={{ width: 36, height: 36 }}
-                  />
-                ) : (
-                  <div
-                    className="avatar avatar-placeholder"
-                    style={{ width: 36, height: 36, fontSize: '0.85rem' }}
-                  >
-                    {member.name?.charAt(0) || 'U'}
-                  </div>
-                )}
+                <Avatar name={member.name} src={member.avatar} style={{ width: 36, height: 36, fontSize: '0.85rem' }} />
                 <span className="online-indicator" />
               </div>
               <span className="online-member-name">{member.name}</span>
@@ -257,23 +244,12 @@ function GroupChatWindow() {
             >
               {!isSent && (
                 isFirstInGroup ? (
-                  senderAvatar ? (
-                    <img
-                      src={senderAvatar}
-                      alt={senderName}
-                      className="group-message-avatar"
-                      onClick={() => navigate(`/profile/${senderId}`)}
-                      title={senderName}
-                    />
-                  ) : (
-                    <div
-                      className="avatar avatar-placeholder group-message-avatar"
-                      onClick={() => navigate(`/profile/${senderId}`)}
-                      title={senderName}
-                    >
-                      {senderName?.charAt(0) || 'U'}
-                    </div>
-                  )
+                  <Avatar
+                    name={senderName}
+                    src={senderAvatar}
+                    className="group-message-avatar"
+                    onClick={() => navigate(`/profile/${senderId}`)}
+                  />
                 ) : (
                   <div style={{ width: 32, flexShrink: 0 }} />
                 )

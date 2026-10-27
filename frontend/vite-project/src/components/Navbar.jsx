@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { logoutUser } from '../store/slices/authSlice'
 import NotificationBell from './NotificationBell'
+import Avatar from './Avatar'
 
 function Navbar() {
   const dispatch = useDispatch()
@@ -21,8 +22,6 @@ function Navbar() {
     if (search.trim()) navigate(`/profile/${search.trim()}`)
   }
 
-  const avatarInitial = user?.name?.charAt(0).toUpperCase() || 'U'
-
   return (
     <nav className="navbar">
       <div className="navbar-search">
@@ -39,22 +38,7 @@ function Navbar() {
       <div className="navbar-actions">
         <NotificationBell />
         <div style={{ position: 'relative' }}>
-          {user?.avatar ? (
-            <img
-              src={user.avatar}
-              alt={user.name}
-              className="avatar"
-              onClick={() => setShowDropdown(!showDropdown)}
-            />
-          ) : (
-            <div
-              className="avatar avatar-placeholder"
-              onClick={() => setShowDropdown(!showDropdown)}
-              style={{ fontSize: '0.9rem' }}
-            >
-              {avatarInitial}
-            </div>
-          )}
+          <Avatar name={user?.name} src={user?.avatar} onClick={() => setShowDropdown(!showDropdown)} style={{ fontSize: '0.9rem' }} />
           {showDropdown && (
             <div style={{
               position: 'absolute', right: 0, top: 'calc(100% + 10px)',

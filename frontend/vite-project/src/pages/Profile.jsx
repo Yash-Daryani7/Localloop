@@ -5,6 +5,7 @@ import Sidebar from '../components/Sidebar'
 import Navbar from '../components/Navbar'
 import axiosInstance from '../api/axios'
 import NeighborhoodMapPicker from '../components/NeighborhoodMapPicker'
+import Avatar from '../components/Avatar'
 
 function Profile() {
   const { id } = useParams()
@@ -106,13 +107,7 @@ function Profile() {
             <div className="profile-cover" />
             <div className="profile-info">
               <div className="profile-avatar-wrap">
-                {profile.avatar ? (
-                  <img src={profile.avatar} alt={profile.name} className="avatar avatar-xl" />
-                ) : (
-                  <div className="avatar avatar-xl avatar-placeholder" style={{ fontSize: '2rem' }}>
-                    {profile.name?.charAt(0).toUpperCase()}
-                  </div>
-                )}
+                <Avatar name={profile.name} src={profile.avatar} size="xl" style={{ fontSize: '2rem' }} />
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginBottom: 12 }}>
                 {isOwn ? (

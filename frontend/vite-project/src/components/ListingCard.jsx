@@ -1,5 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import Avatar from './Avatar'
 
 function ListingCard({ listing }) {
   const navigate = useNavigate()
@@ -25,13 +26,7 @@ function ListingCard({ listing }) {
           <span style={{ fontFamily: 'Outfit', fontWeight: 700, fontSize: '1.1rem', color: listing.type === 'free' ? 'var(--accent-success)' : 'var(--text-primary)' }}>
             {listing.type === 'free' ? 'FREE' : listing.price > 0 ? `₹${listing.price}` : 'Negotiable'}
           </span>
-          {listing.seller?.avatar ? (
-            <img src={listing.seller.avatar} alt={listing.seller.name} className="avatar avatar-sm" />
-          ) : (
-            <div className="avatar avatar-sm avatar-placeholder" style={{ fontSize: '0.7rem' }}>
-              {listing.seller?.name?.charAt(0) || 'U'}
-            </div>
-          )}
+          <Avatar name={listing.seller?.name} src={listing.seller?.avatar} size="sm" style={{ fontSize: '0.7rem' }} />
         </div>
       </div>
     </div>

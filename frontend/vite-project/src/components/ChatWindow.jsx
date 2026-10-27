@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { sendMessage } from '../store/slices/chatSlice'
+import Avatar from './Avatar'
 
 function ChatWindow({ otherUser, conversationId }) {
   const dispatch = useDispatch()
@@ -52,11 +53,7 @@ function ChatWindow({ otherUser, conversationId }) {
   return (
     <div className="chat-window">
       <div className="chat-window-header">
-        {otherUser.avatar ? (
-          <img src={otherUser.avatar} alt={otherUser.name} className="avatar" />
-        ) : (
-          <div className="avatar avatar-placeholder">{otherUser.name?.charAt(0)}</div>
-        )}
+        <Avatar name={otherUser.name} src={otherUser.avatar} />
         <div>
           <div style={{ fontWeight: 600 }}>{otherUser.name}</div>
           <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>📍 {otherUser.neighborhood}</div>
