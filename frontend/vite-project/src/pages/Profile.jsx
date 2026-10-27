@@ -104,11 +104,12 @@ function Profile() {
         <div className="page-wrapper">
           {/* Profile Header */}
           <div className="profile-header-card">
-            <div className="profile-cover" />
-            <div className="profile-info">
+            <div className="profile-cover">
               <div className="profile-avatar-wrap">
                 <Avatar name={profile.name} src={profile.avatar} size="xl" style={{ fontSize: '2rem' }} />
               </div>
+            </div>
+            <div className="profile-info">
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginBottom: 12 }}>
                 {isOwn ? (
                   <button className="btn btn-secondary btn-sm" onClick={() => setEditing(true)}>✏️ Edit Profile</button>
