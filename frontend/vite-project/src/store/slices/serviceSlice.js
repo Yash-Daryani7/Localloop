@@ -55,11 +55,18 @@ export const deleteService = createAsyncThunk('services/delete', async (id, { re
   }
 })
 
+const addServiceOnce = (services, service) => {
+  if (!service?._id) return
+  const existingIndex = services.findIndex(item => item._id === service._id)
+  if (existingIndex === -1) services.unshift(service)
+  else services[existingIndex] = { ...services[existingIndex], ...service }
+}
+
 const serviceSlice = createSlice({
   name: 'services',
   initialState: { services: [], currentService: null, loading: false, error: null },
   reducers: {
-    addService: (state, action) => { state.services.unshift(action.payload) }
+    addService: (state, action) => { addServiceOnce(state.services, action.payload) }
   },
   extraReducers: (builder) => {
     builder
@@ -67,7 +74,7 @@ const serviceSlice = createSlice({
       .addCase(fetchServices.fulfilled, (state, action) => { state.loading = false; state.services = action.payload.services })
       .addCase(fetchServices.rejected, (state, action) => { state.loading = false; state.error = action.payload })
       .addCase(fetchServiceById.fulfilled, (state, action) => { state.currentService = action.payload })
-      .addCase(createService.fulfilled, (state, action) => { state.services.unshift(action.payload) })
+      .addCase(createService.fulfilled, (state, action) => { addServiceOnce(state.services, action.payload) })
       .addCase(respondToService.fulfilled, (state, action) => {
         const idx = state.services.findIndex(s => s._id === action.payload._id)
         if (idx !== -1) state.services[idx] = action.payload

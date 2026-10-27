@@ -381,6 +381,7 @@ textarea.form-input { resize: vertical; min-height: 100px; }
 .message-time { font-size: 0.7rem; opacity: 0.6; margin-top: 4px; }
 
 .chat-input-area { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; background: var(--bg-secondary); }
+.chat-send-error { padding: 0 20px 12px; color: var(--accent-danger); font-size: 0.85rem; background: var(--bg-secondary); }
 .chat-input { flex: 1; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-full); padding: 10px 18px; color: var(--text-primary); font-size: 0.9rem; outline: none; font-family: 'Inter', sans-serif; }
 .chat-input:focus { border-color: var(--border-focus); }
 

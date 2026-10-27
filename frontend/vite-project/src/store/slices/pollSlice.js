@@ -46,11 +46,18 @@ export const deletePoll = createAsyncThunk('polls/delete', async (id, { rejectWi
   }
 })
 
+const addPollOnce = (polls, poll) => {
+  if (!poll?._id) return
+  const existingIndex = polls.findIndex(item => item._id === poll._id)
+  if (existingIndex === -1) polls.unshift(poll)
+  else polls[existingIndex] = { ...polls[existingIndex], ...poll }
+}
+
 const pollSlice = createSlice({
   name: 'polls',
   initialState: { polls: [], currentPoll: null, loading: false, error: null },
   reducers: {
-    addPoll: (state, action) => { state.polls.unshift(action.payload) },
+    addPoll: (state, action) => { addPollOnce(state.polls, action.payload) },
     updatePoll: (state, action) => {
       const idx = state.polls.findIndex(p => p._id === action.payload._id)
       if (idx !== -1) state.polls[idx] = action.payload
@@ -63,7 +70,7 @@ const pollSlice = createSlice({
       .addCase(fetchPolls.fulfilled, (state, action) => { state.loading = false; state.polls = action.payload.polls })
       .addCase(fetchPolls.rejected, (state, action) => { state.loading = false; state.error = action.payload })
       .addCase(fetchPollById.fulfilled, (state, action) => { state.currentPoll = action.payload })
-      .addCase(createPoll.fulfilled, (state, action) => { state.polls.unshift(action.payload) })
+      .addCase(createPoll.fulfilled, (state, action) => { addPollOnce(state.polls, action.payload) })
       .addCase(votePoll.fulfilled, (state, action) => {
         const idx = state.polls.findIndex(p => p._id === action.payload._id)
         if (idx !== -1) state.polls[idx] = action.payload

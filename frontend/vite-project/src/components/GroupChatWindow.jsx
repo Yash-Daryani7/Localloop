@@ -22,7 +22,10 @@ function GroupChatWindow() {
   } = useSelector(state => state.groupChat)
 
   const [text, setText] = useState('')
+  const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState('')
   const bottomRef = useRef(null)
+  const sendingRef = useRef(false)
   const typingTimeoutRef = useRef(null)
   const prevLastMsgIdRef = useRef(null)
 
@@ -87,7 +90,11 @@ function GroupChatWindow() {
   const handleSend = async (e) => {
     e.preventDefault()
     const content = text.trim()
-    if (!content || !user?.neighborhood) return
+    if (!content || !user?.neighborhood || sendingRef.current) return
+
+    sendingRef.current = true
+    setSending(true)
+    setSendError('')
 
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current)
@@ -97,27 +104,15 @@ function GroupChatWindow() {
       name: user.name
     })
 
-    setText('')
-
-    const res = await dispatch(
-      sendGroupMessage({
-        content,
-        neighborhood: user.neighborhood
-      })
-    )
-
-    const sentMessage = res.payload
-    socket.emit('send_group_message', {
-      content,
-      neighborhood: user.neighborhood,
-      sender: {
-        _id: user._id,
-        name: user.name,
-        avatar: user.avatar,
-        neighborhood: user.neighborhood
-      },
-      ...(sentMessage && typeof sentMessage === 'object' ? sentMessage : {})
-    })
+    try {
+      await dispatch(sendGroupMessage({ content })).unwrap()
+      setText('')
+    } catch (error) {
+      setSendError(typeof error === 'string' ? error : 'Failed to send message. Please try again.')
+    } finally {
+      sendingRef.current = false
+      setSending(false)
+    }
   }
 
   const handleLoadOlder = () => {
@@ -331,11 +326,12 @@ function GroupChatWindow() {
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={!text.trim()}
+          disabled={!text.trim() || sending}
         >
-          Send ➤
+          {sending ? 'Sending…' : 'Send ➤'}
         </button>
       </form>
+      {sendError && <div role="alert" className="chat-send-error">{sendError}</div>}
     </div>
   )
 }

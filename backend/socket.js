@@ -1,8 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from './models/User.model.js';
-import Message from './models/Message.model.js';
-import GroupMessage from './models/GroupMessage.model.js';
-import Notification from './models/Notification.model.js';
+
+const normalizeNeighborhood = (value) => String(value || '').trim().toLowerCase();
 
 export let io = null;
 
@@ -65,133 +64,26 @@ export const initSocket = (serverIO) => {
 
       // Automatically join user's neighborhood room
       if (socket.user.neighborhood) {
-        const neighborhoodRoom = `neighborhood:${socket.user.neighborhood}`;
+        const neighborhoodRoom = `neighborhood:${normalizeNeighborhood(socket.user.neighborhood)}`;
         socket.join(neighborhoodRoom);
         console.log(`User joined neighborhood room: ${neighborhoodRoom}`);
       }
     }
 
-    // Join arbitrary neighborhood room
+    // Only allow authenticated users to join their own neighborhood room.
     socket.on('join_neighborhood', (neighborhood) => {
-      if (neighborhood) {
-        const room = `neighborhood:${neighborhood}`;
+      const ownNeighborhood = normalizeNeighborhood(socket.user?.neighborhood);
+      if (ownNeighborhood && normalizeNeighborhood(neighborhood) === ownNeighborhood) {
+        const room = `neighborhood:${ownNeighborhood}`;
         socket.join(room);
         console.log(`Socket ${socket.id} manually joined ${room}`);
       }
     });
 
-    // Handle real-time messaging
-    socket.on('send_message', async (data, callback) => {
-      try {
-        const senderId = socket.user?._id || data.senderId;
-        const { receiverId, content } = data;
-
-        if (!senderId || !receiverId || !content) {
-          if (callback) callback({ error: 'Missing required message parameters' });
-          return;
-        }
-
-        const conversationId = [senderId.toString(), receiverId.toString()].sort().join('_');
-
-        const message = new Message({
-          sender: senderId,
-          receiver: receiverId,
-          content,
-          conversationId
-        });
-        await message.save();
-        await message.populate('sender', 'name avatar neighborhood');
-
-        // Emit to receiver's private room
-        io.to(`user:${receiverId}`).emit('receive_message', message);
-
-        // Also emit notification to receiver
-        const notification = new Notification({
-          recipient: receiverId,
-          sender: senderId,
-          type: 'new_message',
-          referenceId: message._id,
-          message: `New message from ${socket.user?.name || 'a user'}: "${content.substring(0, 30)}..."`
-        });
-        await notification.save();
-        await notification.populate('sender', 'name avatar neighborhood');
-
-        io.to(`user:${receiverId}`).emit('new_notification', notification);
-
-        if (callback) callback({ status: 'ok', message });
-      } catch (error) {
-        console.error('Socket send_message error:', error);
-        if (callback) callback({ error: error.message });
-      }
-    });
-
-    // Handle real-time new event broadcast
-    socket.on('new_event', (eventData) => {
-      if (eventData?.neighborhood) {
-        io.to(`neighborhood:${eventData.neighborhood}`).emit('event_created', eventData);
-      }
-    });
-
-    // Handle real-time new listing broadcast
-    socket.on('new_listing', (listingData) => {
-      if (listingData?.neighborhood) {
-        io.to(`neighborhood:${listingData.neighborhood}`).emit('listing_created', listingData);
-      }
-    });
-
-    // Handle real-time new poll broadcast
-    socket.on('new_poll', (pollData) => {
-      if (pollData?.neighborhood) {
-        io.to(`neighborhood:${pollData.neighborhood}`).emit('poll_created', pollData);
-      }
-    });
-
-    // Handle real-time poll vote broadcast
-    socket.on('poll_vote', (pollData) => {
-      if (pollData?.neighborhood) {
-        io.to(`neighborhood:${pollData.neighborhood}`).emit('poll_updated', pollData);
-      }
-    });
-
-    // Handle group chat message
-    socket.on('send_group_message', async (data, callback) => {
-      try {
-        const senderId = socket.user?._id;
-        if (!senderId) {
-          if (callback) callback({ error: 'Authentication required' });
-          return;
-        }
-
-        const { content, neighborhood } = data;
-        const targetNeighborhood = neighborhood || socket.user.neighborhood;
-
-        if (!content || !content.trim()) {
-          if (callback) callback({ error: 'Message content is required' });
-          return;
-        }
-
-        const message = new GroupMessage({
-          sender: senderId,
-          neighborhood: targetNeighborhood,
-          content: content.trim()
-        });
-        await message.save();
-        await message.populate('sender', 'name avatar neighborhood');
-
-        // Broadcast to entire neighborhood room
-        io.to(`neighborhood:${targetNeighborhood}`).emit('receive_group_message', message);
-
-        if (callback) callback({ status: 'ok', message });
-      } catch (error) {
-        console.error('Socket send_group_message error:', error);
-        if (callback) callback({ error: error.message });
-      }
-    });
-
     // Handle group typing indicator
-    socket.on('typing_group', (data) => {
-      if (socket.user) {
-        const neighborhood = data?.neighborhood || socket.user.neighborhood;
+    socket.on('typing_group', () => {
+      if (socket.user?.neighborhood) {
+        const neighborhood = normalizeNeighborhood(socket.user.neighborhood);
         socket.to(`neighborhood:${neighborhood}`).emit('user_typing_group', {
           userId: socket.user._id,
           name: socket.user.name
@@ -200,9 +92,9 @@ export const initSocket = (serverIO) => {
     });
 
     // Handle stop typing in group
-    socket.on('stop_typing_group', (data) => {
-      if (socket.user) {
-        const neighborhood = data?.neighborhood || socket.user.neighborhood;
+    socket.on('stop_typing_group', () => {
+      if (socket.user?.neighborhood) {
+        const neighborhood = normalizeNeighborhood(socket.user.neighborhood);
         socket.to(`neighborhood:${neighborhood}`).emit('user_stop_typing_group', {
           userId: socket.user._id,
           name: socket.user.name

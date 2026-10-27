@@ -27,11 +27,18 @@ export const createEvent = async (req, res) => {
       });
     }
 
-    const eventNeighborhood = neighborhood || req.user.neighborhood;
+    const eventNeighborhood = (req.user.neighborhood || '').trim().toLowerCase();
     if (!eventNeighborhood) {
       return res.status(400).json({
         success: false,
         message: 'Neighborhood is required.'
+      });
+    }
+
+    if (neighborhood && neighborhood.trim().toLowerCase() !== eventNeighborhood) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only create events in your own neighborhood'
       });
     }
 

@@ -64,23 +64,40 @@ export const deleteEvent = createAsyncThunk('events/delete', async (id, { reject
   }
 })
 
+const addEventOnce = (events, event) => {
+  if (!event?._id) return
+  const existingIndex = events.findIndex(item => item._id === event._id)
+  if (existingIndex === -1) events.unshift(event)
+  else events[existingIndex] = { ...events[existingIndex], ...event }
+}
+
+const uniqueEvents = (events) => {
+  const seen = new Set()
+  return events.filter(event => {
+    const id = event?._id
+    if (!id || seen.has(id)) return false
+    seen.add(id)
+    return true
+  })
+}
+
 const eventSlice = createSlice({
   name: 'events',
   initialState: { events: [], currentEvent: null, loading: false, error: null, totalPages: 1 },
   reducers: {
-    addEvent: (state, action) => { state.events.unshift(action.payload) },
+    addEvent: (state, action) => { addEventOnce(state.events, action.payload) },
     clearCurrentEvent: (state) => { state.currentEvent = null },
     clearError: (state) => { state.error = null }
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchEvents.pending, (state) => { state.loading = true })
-      .addCase(fetchEvents.fulfilled, (state, action) => { state.loading = false; state.events = action.payload.events; state.totalPages = action.payload.totalPages || 1 })
+      .addCase(fetchEvents.fulfilled, (state, action) => { state.loading = false; state.events = uniqueEvents(action.payload.events || []); state.totalPages = action.payload.totalPages || 1 })
       .addCase(fetchEvents.rejected, (state, action) => { state.loading = false; state.error = action.payload })
       .addCase(fetchEventById.pending, (state) => { state.loading = true })
       .addCase(fetchEventById.fulfilled, (state, action) => { state.loading = false; state.currentEvent = action.payload })
       .addCase(fetchEventById.rejected, (state, action) => { state.loading = false; state.error = action.payload })
-      .addCase(createEvent.fulfilled, (state, action) => { state.events.unshift(action.payload) })
+      .addCase(createEvent.fulfilled, (state, action) => { addEventOnce(state.events, action.payload) })
       .addCase(rsvpEvent.fulfilled, (state, action) => {
         state.currentEvent = action.payload
         const idx = state.events.findIndex(e => e._id === action.payload._id)

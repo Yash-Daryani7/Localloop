@@ -4,7 +4,8 @@ import { getIO } from '../socket.js';
 
 export const getGroupMessages = async (req, res) => {
   try {
-    const neighborhood = (req.query.neighborhood || req.user?.neighborhood || '').trim().toLowerCase();
+    const neighborhood = (req.user?.neighborhood || '').trim().toLowerCase();
+    const requestedNeighborhood = (req.query.neighborhood || '').trim().toLowerCase();
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 50;
     const skip = (page - 1) * limit;
@@ -13,6 +14,13 @@ export const getGroupMessages = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Neighborhood is required'
+      });
+    }
+
+    if (requestedNeighborhood && requestedNeighborhood !== neighborhood) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only view your own neighborhood chat'
       });
     }
 
@@ -45,7 +53,8 @@ export const getGroupMessages = async (req, res) => {
 export const sendGroupMessage = async (req, res) => {
   try {
     const { content } = req.body;
-    const neighborhood = (req.body.neighborhood || req.user?.neighborhood || '').trim().toLowerCase();
+    const neighborhood = (req.user?.neighborhood || '').trim().toLowerCase();
+    const requestedNeighborhood = (req.body.neighborhood || '').trim().toLowerCase();
 
     if (!content || !content.trim()) {
       return res.status(400).json({
@@ -58,6 +67,13 @@ export const sendGroupMessage = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Neighborhood is required'
+      });
+    }
+
+    if (requestedNeighborhood && requestedNeighborhood !== neighborhood) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only send messages to your own neighborhood chat'
       });
     }
 
@@ -91,12 +107,20 @@ export const sendGroupMessage = async (req, res) => {
 
 export const getOnlineMembers = async (req, res) => {
   try {
-    const neighborhood = (req.query.neighborhood || req.user?.neighborhood || '').trim().toLowerCase();
+    const neighborhood = (req.user?.neighborhood || '').trim().toLowerCase();
+    const requestedNeighborhood = (req.query.neighborhood || '').trim().toLowerCase();
 
     if (!neighborhood) {
       return res.status(400).json({
         success: false,
         message: 'Neighborhood is required'
+      });
+    }
+
+    if (requestedNeighborhood && requestedNeighborhood !== neighborhood) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only view members of your own neighborhood'
       });
     }
 

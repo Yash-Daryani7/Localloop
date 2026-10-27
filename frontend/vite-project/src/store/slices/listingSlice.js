@@ -55,11 +55,18 @@ export const expressInterest = createAsyncThunk('listings/interest', async (id, 
   }
 })
 
+const addListingOnce = (listings, listing) => {
+  if (!listing?._id) return
+  const existingIndex = listings.findIndex(item => item._id === listing._id)
+  if (existingIndex === -1) listings.unshift(listing)
+  else listings[existingIndex] = { ...listings[existingIndex], ...listing }
+}
+
 const listingSlice = createSlice({
   name: 'listings',
   initialState: { listings: [], currentListing: null, loading: false, error: null },
   reducers: {
-    addListing: (state, action) => { state.listings.unshift(action.payload) },
+    addListing: (state, action) => { addListingOnce(state.listings, action.payload) },
     clearCurrentListing: (state) => { state.currentListing = null }
   },
   extraReducers: (builder) => {
@@ -70,7 +77,7 @@ const listingSlice = createSlice({
       .addCase(fetchListingById.pending, (state) => { state.loading = true })
       .addCase(fetchListingById.fulfilled, (state, action) => { state.loading = false; state.currentListing = action.payload })
       .addCase(fetchListingById.rejected, (state, action) => { state.loading = false; state.error = action.payload })
-      .addCase(createListing.fulfilled, (state, action) => { state.listings.unshift(action.payload) })
+      .addCase(createListing.fulfilled, (state, action) => { addListingOnce(state.listings, action.payload) })
       .addCase(markSold.fulfilled, (state, action) => {
         const idx = state.listings.findIndex(l => l._id === action.payload._id)
         if (idx !== -1) state.listings[idx] = action.payload

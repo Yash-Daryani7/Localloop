@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { createEvent } from '../store/slices/eventSlice'
 
@@ -8,20 +8,27 @@ function CreateEventModal({ onClose }) {
   const [images, setImages] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const submittingRef = useRef(false)
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (submittingRef.current) return
     if (!form.title || !form.date || !form.location) { setError('Please fill in all required fields'); return }
+    submittingRef.current = true
     setLoading(true); setError('')
     const fd = new FormData()
     Object.keys(form).forEach(k => fd.append(k, form[k]))
     images.forEach(img => fd.append('images', img))
-    const res = await dispatch(createEvent(fd))
-    setLoading(false)
-    if (res.error) setError(res.payload || 'Failed to create event')
-    else onClose()
+    try {
+      const res = await dispatch(createEvent(fd))
+      if (res.error) setError(res.payload || 'Failed to create event')
+      else onClose()
+    } finally {
+      submittingRef.current = false
+      setLoading(false)
+    }
   }
 
   return (

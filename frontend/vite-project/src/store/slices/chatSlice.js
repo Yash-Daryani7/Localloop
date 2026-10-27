@@ -33,6 +33,7 @@ const chatSlice = createSlice({
   initialState: { conversations: [], messages: [], activeConversation: null, loading: false, error: null },
   reducers: {
     addMessage: (state, action) => {
+      if (!action.payload || action.payload.conversationId !== state.activeConversation) return
       const exists = state.messages.find(m => m._id === action.payload._id)
       if (!exists) state.messages.push(action.payload)
     },
@@ -43,10 +44,17 @@ const chatSlice = createSlice({
       .addCase(fetchConversations.pending, (state) => { state.loading = true })
       .addCase(fetchConversations.fulfilled, (state, action) => { state.loading = false; state.conversations = action.payload })
       .addCase(fetchConversations.rejected, (state, action) => { state.loading = false; state.error = action.payload })
-      .addCase(fetchMessages.pending, (state) => { state.loading = true; state.messages = [] })
-      .addCase(fetchMessages.fulfilled, (state, action) => { state.loading = false; state.messages = action.payload })
+      .addCase(fetchMessages.pending, (state, action) => {
+        state.loading = true
+        if (action.meta.arg === state.activeConversation) state.messages = []
+      })
+      .addCase(fetchMessages.fulfilled, (state, action) => {
+        state.loading = false
+        if (action.meta.arg === state.activeConversation) state.messages = action.payload
+      })
       .addCase(fetchMessages.rejected, (state, action) => { state.loading = false; state.error = action.payload })
       .addCase(sendMessage.fulfilled, (state, action) => {
+        if (action.payload?.conversationId !== state.activeConversation) return
         const exists = state.messages.find(m => m._id === action.payload._id)
         if (!exists) state.messages.push(action.payload)
       })
